@@ -14,9 +14,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class StateManagerImpl<T extends Stateful> implements StateManager<T> {
+public class StateManagerImpl<T extends Stateful<T>> implements StateManager<T> {
 
-    private final Map<T, Boolean> runningRecorder = new ConcurrentHashMap<>();
+    private final ThreadLocal<Boolean> runningRecorder = ThreadLocal.withInitial(() -> false);
 
     private final List<StateTransitionListener<T>> listeners = new ArrayList<>();
 
@@ -24,7 +24,9 @@ public class StateManagerImpl<T extends Stateful> implements StateManager<T> {
 
     private final Map<String, List<Transition<T>>> transitionRegistry = new HashMap<>();
 
-    private final Map<StateEventKey, Transition<T>> transitionActionCache = new ConcurrentHashMap<>();
+    private final Map<String, Transition<T>> transitionActionCache = new ConcurrentHashMap<>();
+
+    private final StateTransitionListenerComparator<T> comparator = new StateTransitionListenerComparator<>();
 
     @Override
     public State<T> getState(String name) {
@@ -81,20 +83,20 @@ public class StateManagerImpl<T extends Stateful> implements StateManager<T> {
             throw new IllegalArgumentException("duplicate listener " + listener);
         }
         listeners.add(listener);
-        listeners.sort(new StateTransitionListenerComparator<>());
+        listeners.sort(comparator);
     }
 
     @Override
     public final void step(T context, Event event) throws NoMatchedEventException, StateTransitionException {
-        Boolean running = runningRecorder.putIfAbsent(context, true);
+        Boolean running = runningRecorder.get();
         if (running != null && running) {
             throw new StateTransitionException("state machine is running");
         }
         try {
+            runningRecorder.set(true);
+
             State<T> from = context.getState();
-
             Transition<T> targetTransition = getTransition(from, event);
-
             State<T> to = targetTransition.getTo();
 
             for (StateTransitionListener<T> transitionListener : listeners) {
@@ -112,9 +114,12 @@ public class StateManagerImpl<T extends Stateful> implements StateManager<T> {
             to.entryAction(context, event);
 
             context.setState(to);
-            runningRecorder.remove(context);
 
-            for (StateTransitionListener<T> transitionListener : listeners) {
+            for (int i = 0; i < listeners.size(); i++) {
+                if (i == listeners.size() - 1) {
+                    runningRecorder.set(false);
+                }
+                StateTransitionListener<T> transitionListener = listeners.get(i);
                 transitionListener.afterTransition(this, context, from, to, event);
             }
 
@@ -124,24 +129,24 @@ public class StateManagerImpl<T extends Stateful> implements StateManager<T> {
             }
             throw new StateTransitionException(e);
         } finally {
-            runningRecorder.remove(context);
+            runningRecorder.set(false);
         }
     }
 
     private Transition<T> getTransition(State<T> from, Event event) throws NoMatchedEventException {
-        StateEventKey key = new StateEventKey(from, event);
+        Transition<T> targetTransition = transitionActionCache.computeIfAbsent(
+                from.getName() + event.getEventType().getName(),
+                k -> {
+                    List<Transition<T>> transitions = transitionRegistry.getOrDefault(from.getName(),
+                            Collections.emptyList());
 
-        Transition<T> targetTransition = transitionActionCache.computeIfAbsent(key, k -> {
-            List<Transition<T>> transitions = transitionRegistry.getOrDefault(k.getState().getName(),
-                    Collections.emptyList());
-
-            return transitions.stream()
-                    .filter(t -> Objects.equals(t.getEventType().getName(), k.getEvent().getEventType().getName()))
-                    .findAny().orElse(null);
-        });
+                    return transitions.stream()
+                            .filter(t -> Objects.equals(t.getEventType().getName(), event.getEventType().getName()))
+                            .findAny().orElse(null);
+                });
         if (targetTransition == null) {
             String msg = String.format("current state [%s] does not respond to event type [%s]",
-                    key.getState().getName(), event.getEventType());
+                    from.getName(), event.getEventType());
             log.warn(msg);
             throw new NoMatchedEventException(msg);
         }

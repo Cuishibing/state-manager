@@ -9,7 +9,7 @@ import cui.shibing.statemanager.state.State;
 import cui.shibing.statemanager.state.Stateful;
 import cui.shibing.statemanager.state.TransitionAction;
 
-public interface StateManager<T extends Stateful> {
+public interface StateManager<T extends Stateful<T>> {
 
     /**
      * 根据id获取已注册的一个状态

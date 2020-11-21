@@ -2,7 +2,7 @@ package cui.shibing.statemanager.state;
 
 import cui.shibing.statemanager.event.Event;
 
-public interface State<T extends Stateful> {
+public interface State<T extends Stateful<T>> {
 
     /**
      * 状态Name

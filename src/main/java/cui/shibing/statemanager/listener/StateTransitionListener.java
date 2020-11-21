@@ -10,7 +10,7 @@ import cui.shibing.statemanager.state.Stateful;
  *
  * @param <C> 状态持有者的类型
  */
-public interface StateTransitionListener<C extends Stateful> {
+public interface StateTransitionListener<C extends Stateful<C>> {
 
     /**
      * 在状态转移之前调用

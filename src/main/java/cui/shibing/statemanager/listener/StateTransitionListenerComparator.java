@@ -4,7 +4,7 @@ import cui.shibing.statemanager.state.Stateful;
 
 import java.util.Comparator;
 
-public class StateTransitionListenerComparator<C extends Stateful> implements Comparator<StateTransitionListener<C>> {
+public class StateTransitionListenerComparator<C extends Stateful<C>> implements Comparator<StateTransitionListener<C>> {
     @Override
     public int compare(StateTransitionListener<C> o1, StateTransitionListener<C> o2) {
         Order o1OrderAnnotation = o1.getClass().getAnnotation(Order.class);

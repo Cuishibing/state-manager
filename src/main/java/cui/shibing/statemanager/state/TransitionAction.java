@@ -3,7 +3,7 @@ package cui.shibing.statemanager.state;
 import cui.shibing.statemanager.event.Event;
 
 @FunctionalInterface
-public interface TransitionAction<T extends Stateful> {
+public interface TransitionAction<T extends Stateful<T>> {
 
     /**
      * 状态转移动作

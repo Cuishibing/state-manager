@@ -6,10 +6,10 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class Transition<T extends Stateful<T>> {
+public class Transition {
     private EventType eventType;
-    private State<T> from;
-    private State<T> to;
+    private State from;
+    private State to;
 
-    private TransitionAction<T> action;
+    private TransitionAction action;
 }

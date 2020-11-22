@@ -10,7 +10,7 @@ import cui.shibing.statemanager.state.State;
 import cui.shibing.statemanager.state.Stateful;
 import cui.shibing.statemanager.state.TransitionAction;
 
-public interface StateManager<T extends Stateful<T>> {
+public interface StateManager {
 
     /**
      * 根据id获取已注册的一个状态
@@ -19,7 +19,7 @@ public interface StateManager<T extends Stateful<T>> {
      * @return 已注册的一个状态
      * @throws IllegalArgumentException 要获取的状态不存在
      */
-    State<T> getState(String name);
+    State getState(String name);
 
     /**
      * 注册一个空的转移动作，从 from 到 to 的状态转移不会有任何动作
@@ -29,7 +29,7 @@ public interface StateManager<T extends Stateful<T>> {
      * @param to        次态
      * @throws IllegalStateException 一个状态重复的事件类型
      */
-    void registerTransition(EventType eventType, State<T> from, State<T> to);
+    void registerTransition(EventType eventType, State from, State to);
 
     /**
      * 注册一个转移动作，从 from 到 to 的状态转移会调用action指定的动作
@@ -40,22 +40,22 @@ public interface StateManager<T extends Stateful<T>> {
      * @param action    转移动作
      * @throws IllegalStateException 一个状态重复的事件类型
      */
-    void registerTransition(EventType eventType, State<T> from, State<T> to, TransitionAction<T> action);
+    void registerTransition(EventType eventType, State from, State to, TransitionAction action);
 
     /**
      * 注册一个状态转移监听器
      *
      * @param listener 监听器
      */
-    void registerTransitionListener(TransitionListener<T> listener);
+    void registerTransitionListener(TransitionListener listener);
 
     /**
      * 注册一个状态转移监听器
      *
      * @param listener 监听器
      */
-    void registerTailTransitionListener(TransitionTailListener<T> listener);
+    void registerTailTransitionListener(TransitionTailListener listener);
 
-    void step(T context, Event event) throws NoMatchedEventException, StateTransitionException;
+    void step(Stateful context, Event event) throws NoMatchedEventException, StateTransitionException;
 
 }

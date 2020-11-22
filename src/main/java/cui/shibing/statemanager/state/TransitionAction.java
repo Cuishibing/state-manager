@@ -3,7 +3,7 @@ package cui.shibing.statemanager.state;
 import cui.shibing.statemanager.event.Event;
 
 @FunctionalInterface
-public interface TransitionAction<T extends Stateful<T>> {
+public interface TransitionAction {
 
     /**
      * 状态转移动作
@@ -12,5 +12,5 @@ public interface TransitionAction<T extends Stateful<T>> {
      * @param event   事件
      * @return true：继续状态转移，false：终止状态转移
      */
-    boolean onTransition(T context, Event event) throws Exception;
+    boolean onTransition(Stateful context, Event event) throws Exception;
 }

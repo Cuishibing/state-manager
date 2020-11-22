@@ -1,6 +1,6 @@
 package cui.shibing.statemanager.listener;
 
-import cui.shibing.statemanager.StateManagerImpl;
+import cui.shibing.statemanager.StateManager;
 import cui.shibing.statemanager.event.Event;
 import cui.shibing.statemanager.state.State;
 import cui.shibing.statemanager.state.Stateful;
@@ -10,10 +10,8 @@ import cui.shibing.statemanager.state.Stateful;
  * <p>
  * 如果一次状态转移过程中匹配到了多个TransitionTailListener实例则会抛出异常，也就是说只会有一个TransitionTailListener实例被调用，
  * 并且执行的顺序在所有的TransitionListener之后
- *
- * @param <C> 状态持有者的类型
  */
-public interface TransitionTailListener<C extends Stateful<C>> {
+public interface TransitionTailListener {
 
     /**
      * 是否命中
@@ -25,7 +23,7 @@ public interface TransitionTailListener<C extends Stateful<C>> {
      * @param event   当前事件
      * @return 是否命中
      */
-    boolean supports(StateManagerImpl<C> machine, C context, State<C> from, State<C> to, Event event);
+    boolean supports(StateManager machine, Stateful context, State from, State to, Event event);
 
     /**
      * <pre>
@@ -41,7 +39,7 @@ public interface TransitionTailListener<C extends Stateful<C>> {
      * @param to      要转移的状态
      * @param event   当前事件
      */
-    default void afterTransition(StateManagerImpl<C> machine, C context, State<C> from, State<C> to, Event event) {
+    default void afterTransition(StateManager machine, Stateful context, State from, State to, Event event) {
 
     }
 }

@@ -1,7 +1,7 @@
 package cui.shibing.statemanager.state;
 
-public interface Stateful<T extends Stateful<T>> {
-    State<T> getState();
+public interface Stateful {
+    State getState();
 
-    void setState(State<T> state);
+    void setState(State state);
 }
